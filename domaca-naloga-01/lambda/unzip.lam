@@ -1,0 +1,8 @@
+LET REC unzip l = 
+    MATCH l WITH
+    | [] -> {[],[]}
+    | x :: xs -> 
+        LET l2 = unzip xs IN
+        {(FST x)::(FST l2), (SND x)::(SND l2)}
+IN
+unzip ({1,2}::{2,4}::{3,6}::[])

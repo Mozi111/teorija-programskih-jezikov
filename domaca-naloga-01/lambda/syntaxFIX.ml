@@ -24,6 +24,30 @@ type exp =
 let let_in (x, e1, e2) = Apply (Lambda (x, e2), e1)
 let let_rec_in (f, x, e1, e2) = let_in (f, RecLambda (f, x, e1), e2)
 
+let rec vbs = function (* find all variables in e *)
+  | Var x -> [x]
+  | Int _ | Bool _ -> []
+  | Plus (e1, e2) -> (vbs e1) @ (vbs e2)
+  | Minus (e1, e2) -> vbs e1 @ vbs e2
+  | Times (e1, e2) -> vbs e1 @ vbs e2
+  | Equal (e1, e2) -> vbs e1 @ vbs e2
+  | Less (e1, e2) -> vbs e1 @ vbs e2
+  | Greater (e1, e2) -> vbs e1 @ vbs e2
+  | IfThenElse (e, e1, e2) -> vbs e @ vbs e1 @ vbs e2
+  | Lambda (x, e) -> x::(vbs e)
+  | RecLambda (f, x, e) -> f::x::(vbs e)
+  | Apply (e1, e2) -> vbs e1 @ vbs e2
+  | Pair (e1, e2) -> vbs e1 @ vbs e2
+  | Fst e -> vbs e
+  | Snd e -> vbs e
+  | Nil -> []
+  | Cons (e1, e2) -> vbs e1 @ vbs e2
+  | Match (e, e1, x, xs, e2) -> x::xs::((vbs e) @ (vbs e1) @ (vbs e2))
+
+
+  let rec generate l x i = (* generate a variable name that is not in l from x and i*)
+   if List.mem (x ^ string_of_int i) l then generate l x (i+1) else x ^ string_of_int i
+
 let rec subst sbst = function
   | Var x as e ->
       begin match List.assoc_opt x sbst with
@@ -39,11 +63,18 @@ let rec subst sbst = function
   | Greater (e1, e2) -> Greater (subst sbst e1, subst sbst e2)
   | IfThenElse (e, e1, e2) -> IfThenElse (subst sbst e, subst sbst e1, subst sbst e2)
   | Lambda (x, e) ->
-      let sbst' = List.remove_assoc x sbst in
-      Lambda (x, subst sbst' e)
+      let sbst' = List.remove_assoc x sbst in (* proste spremenljivke v izrazih v sbst morajo ostati proste v lambdi - v primeru da ne bi bilo tako moramo preimenovati x*)
+      let fvs = List.flatten (List.map vbs (snd (List.split sbst'))) @ (vbs e) @ (fst (List.split sbst')) in
+      let x2 = generate fvs "x" 1
+      in 
+      Lambda (x2, subst sbst' (subst [(x,Var x2)] e)) 
   | RecLambda (f, x, e) ->
       let sbst' = List.remove_assoc f (List.remove_assoc x sbst) in
-      RecLambda (f, x, subst sbst' e)
+      let fvs = List.flatten (List.map vbs (snd (List.split sbst'))) @ (vbs e) @ (fst (List.split sbst')) in
+      let x2 = generate fvs "x" 1
+      and f2 = generate fvs "f" 1
+      in 
+      RecLambda (f2, x2, subst sbst' (subst [(x,Var x2); (f, Var f2)] e))
   | Apply (e1, e2) -> Apply (subst sbst e1, subst sbst e2)
   (* dodano: *)
   | Pair (e1, e2) -> Pair (subst sbst e1, subst sbst e2)
@@ -53,7 +84,11 @@ let rec subst sbst = function
   | Cons (e1, e2) -> Cons (subst sbst e1, subst sbst e2)
   | Match (e, e1, x, xs, e2) -> 
       let sbst' = List.remove_assoc x (List.remove_assoc xs sbst) in
-      Match (subst sbst e, subst sbst e1, x, xs, subst sbst' e2)
+      let fvs = List.flatten (List.map vbs (snd (List.split sbst'))) @ (vbs e2) @ (fst (List.split sbst')) in
+      let x2 = generate fvs "x" 1
+      and xs2 = generate fvs "xs" 1
+      in 
+      Match (subst sbst e, subst sbst e1, x2, xs2, subst sbst' (subst [(x,Var x2); (xs, Var xs2)] e2))
 
 
 let rec string_of_exp3 = function

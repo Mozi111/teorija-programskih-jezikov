@@ -1,0 +1,5 @@
+LET REC infinite l =
+    MATCH l WITH
+    | [] -> {0, 0}
+    | x :: xs -> {x, SND (infinite (1::xs))}
+IN FST (infinite (1::[]))

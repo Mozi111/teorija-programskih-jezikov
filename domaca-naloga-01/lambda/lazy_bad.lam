@@ -1,0 +1,14 @@
+LET REC map f = FUN l ->
+    MATCH l WITH 
+    | [] -> []
+    | x :: xs -> (f x) :: (map f xs)
+IN
+LET REC long l = MATCH l WITH
+    | [] -> 0
+    | x :: xs -> x * long (map (FUN y -> y * x) xs) + long xs
+IN
+LET REC combine l1 = FUN l2 -> MATCH l1 WITH
+    | [] -> l2
+    | x :: xs ->  x :: (combine xs l2)
+IN
+(FUN x -> IF ((x*x) > (x+x)) THEN (x*x) ELSE (x+x)) (long (combine (1::1::1::[]) (1::1::1::[])))

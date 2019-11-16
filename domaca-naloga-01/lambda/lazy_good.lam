@@ -1,0 +1,19 @@
+LET REC fibstep l =
+    MATCH l WITH
+    | [] -> fibstep (0::[])
+    | x :: xs -> MATCH xs WITH
+        | [] -> fibstep (0::1::[])
+        | y :: ys -> MATCH ys WITH
+            | [] -> x::y::(x + y)::[]
+            | z :: zs -> x::(fibstep xs)
+IN
+LET REC fib l =
+    MATCH (fibstep l) WITH
+    | [] -> []
+    | x :: xs -> x :: (fib xs)
+IN
+LET REC nthel n = FUN l ->
+    MATCH l WITH
+    | [] -> 0
+    | x :: xs -> IF n < 1 THEN x ELSE nthel (n-1) xs
+IN nthel 5 (fib [])
