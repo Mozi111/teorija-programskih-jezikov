@@ -45,7 +45,6 @@ let rec subst sbst = function
       let sbst' = List.remove_assoc f (List.remove_assoc x sbst) in
       RecLambda (f, x, subst sbst' e)
   | Apply (e1, e2) -> Apply (subst sbst e1, subst sbst e2)
-  (* dodano: *)
   | Pair (e1, e2) -> Pair (subst sbst e1, subst sbst e2)
   | Fst e -> Fst (subst sbst e)
   | Snd e -> Snd (subst sbst e)

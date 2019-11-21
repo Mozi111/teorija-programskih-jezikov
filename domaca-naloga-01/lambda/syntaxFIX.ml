@@ -44,8 +44,7 @@ let rec vbs = function (* find all variables in e *)
   | Cons (e1, e2) -> vbs e1 @ vbs e2
   | Match (e, e1, x, xs, e2) -> x::xs::((vbs e) @ (vbs e1) @ (vbs e2))
 
-
-  let rec generate l x i = (* generate a variable name that is not in l from x and i*)
+let rec generate l x i = (* generate a variable name that is not in l from x and i*)
    if List.mem (x ^ string_of_int i) l then generate l x (i+1) else x ^ string_of_int i
 
 let rec subst sbst = function
@@ -64,8 +63,8 @@ let rec subst sbst = function
   | IfThenElse (e, e1, e2) -> IfThenElse (subst sbst e, subst sbst e1, subst sbst e2)
   | Lambda (x, e) ->
       let sbst' = List.remove_assoc x sbst in (* proste spremenljivke v izrazih v sbst morajo ostati proste v lambdi - v primeru da ne bi bilo tako moramo preimenovati x*)
-      let fvs = List.flatten (List.map vbs (snd (List.split sbst'))) @ (vbs e) @ (fst (List.split sbst')) in
-      let x2 = generate fvs "x" 1
+      let fvs = List.flatten (List.map vbs (snd (List.split sbst'))) @ (vbs e) @ (fst (List.split sbst')) in (* generiramo seznam vseh spremenljivk v izrazih *)
+      let x2 = generate fvs "x" 1 (* generiramo novo ime za vezano spremenljivko *)
       in 
       Lambda (x2, subst sbst' (subst [(x,Var x2)] e)) 
   | RecLambda (f, x, e) ->
@@ -76,7 +75,6 @@ let rec subst sbst = function
       in 
       RecLambda (f2, x2, subst sbst' (subst [(x,Var x2); (f, Var f2)] e))
   | Apply (e1, e2) -> Apply (subst sbst e1, subst sbst e2)
-  (* dodano: *)
   | Pair (e1, e2) -> Pair (subst sbst e1, subst sbst e2)
   | Fst e -> Fst (subst sbst e)
   | Snd e -> Snd (subst sbst e)
