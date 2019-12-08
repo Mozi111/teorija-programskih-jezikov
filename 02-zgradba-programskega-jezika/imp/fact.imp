@@ -1,3 +1,0 @@
-#n := 10;
-#fact := 1;
-while #n > 0 do #fact := #fact * #n; #n := #n - 1
