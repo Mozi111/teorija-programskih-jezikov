@@ -2,6 +2,15 @@ inductive naravno : Type    -- type naravno =
 | nic : naravno             -- | Nic
 | nasl : naravno -> naravno -- | Nasl of naravno
 
+theorem niso_vsa_naravna_nic : ¬ (forall n, n = naravno.nic) :=
+begin
+  apply not.intro,
+  intros,
+  have ena_je_nic : naravno.nasl (naravno.nic) = naravno.nic,
+    apply a (naravno.nasl naravno.nic),
+    contradiction,
+end
+
 def plus : naravno -> naravno -> naravno
 | naravno.nic      m := m
 | (naravno.nasl m) n := naravno.nasl (plus m n)
