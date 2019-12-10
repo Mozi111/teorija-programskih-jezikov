@@ -1,0 +1,1 @@
+Primer dokaza bo napisan v kratkem

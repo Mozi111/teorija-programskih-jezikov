@@ -4,7 +4,7 @@ Naloga obsega razširitev sistema tipov jezika Lambda in dopolnitev dokaza o var
 
 ## IZGRADNJA IN UPORABA JEZIKA LAMBDA
 
-Jezik Lambda se zgradi tako kot v prvi domači nalogi. V tej domači nalogi uporabljamo zgolj neučakano operacijsko semantiko, zaradi česar način izvajanja ni več argument pri uporabi jezika. Zaradi preglednosti je izpis malih korakov izklopljen (kdor želi lahko odkomentira primerne dele kode v `lambda.ml`).
+Jezik Lambda se zgradi tako kot v prvi domači nalogi. V tej domači nalogi uporabljamo zgolj neučakano operacijsko semantiko, zaradi česar način izvajanja ni več argument pri uporabi jezika. Zaradi preglednosti je izpis malih korakov izklopljen (kdor želi, lahko odkomentira primerne dele kode v `lambda.ml`).
 
 Lambdo tako kot prej zgradite z `ocamlbuild lambda.native` oz. preko taska `Compile Lambda` in zaženete kot `./lambda.native ime_datoteke.lam` oz. preko taska `Lambda`.
 
@@ -22,13 +22,13 @@ Vaše naloge so:
 
 Na predavanjih ste spoznali izrek o varnosti, sestavljen iz napredka in ohranitve.
 
-Dopolniti morate dokaz za vse konstrukte, ki smo jih dodali v jezik pri razširitvi s pari in seznami. V repozitoriju že imate delno dopolnjeno `lambda.lean` datoteko, dopolniti morate zgolj dokaza za `preservation` in `progress`.
+Dopolniti morate dokaz za vse konstrukte, ki smo jih dodali v jezik pri razširitvi s pari in seznami. V repozitoriju že imate delno dopolnjeno datoteko `varnost.lean`, pri čemer morate dopolniti zgolj dokaza za `preservation` in `progress`, v dokazu lem o substituciji in šibitvi lahko pustite `sorry`.
 
 ** NALOGO LAHKO REŠITE SAMOSTOJNO ALI V DOKAZOVALNIKU LEAN **
 
-V primeru, da ne boste dokazovali v LEANu, dodajte datoteke z dokazom v mapo `formalizacija`. Dokazi so zaželeni v markdown ali latex formatu, sprejete pa bodo tudi na roke napisane in skenirane rešitve (v tem primeru se prosim potrudite, da bo vaša pisava dovolj čitljiva).
+V primeru, da ne boste dokazovali v LEANu, datoteke z dokazom prav tako dodajte v mapo `formalizacija`. Dokazi so zaželeni v markdownu (v ta namen imate že delno dopolnjeno datoteko `varnost.md`) ali LaTeXu, sprejete pa bodo tudi na roke napisane in skenirane rešitve (v tem primeru se prosim potrudite, da bo vaša pisava dovolj čitljiva).
 
-Predpostavite lahko veljavnost leme o šibitvi (`ctx |- v : A => ctx, x : B |- v : A`).
+Predpostavite lahko veljavnost leme o šibitvi (`Γ ⊦ e : A ⟹ Γ, x : B ⊦ e : A`).
 
 # DODATNA NALOGA
 Poskusite dokazati lemo o šibitvi. Premislite, kako bi popravili naš sistem, da bi jo lahko dokazali.
