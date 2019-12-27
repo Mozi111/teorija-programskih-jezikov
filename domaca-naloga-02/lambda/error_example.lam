@@ -1,0 +1,1 @@
+IF TRUE THEN (TRUE::[]) ELSE (FUN x -> (FST x) > (SND x))

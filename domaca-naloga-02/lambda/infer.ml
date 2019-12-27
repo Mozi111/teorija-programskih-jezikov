@@ -24,7 +24,7 @@ let rec infer_exp ctx = function
       let t, eqs = infer_exp ctx e
       and t1, eqs1 = infer_exp ctx e1
       and t2, eqs2 = infer_exp ctx e2 in
-      t1, [(t, S.BoolTy); (t1, t2)] @ eqs @ eqs1 @ eqs2
+      t1,  eqs @ eqs1 @ eqs2 @ [(t, S.BoolTy); (t1, t2)] (*sem spremenil vrstni red*)
   | S.Lambda (x, e) ->
       let a = fresh_ty () in
       let ctx' = (x, a) :: ctx in
@@ -42,6 +42,34 @@ let rec infer_exp ctx = function
       and a = fresh_ty ()
       in
       a, [(t1, S.ArrowTy (t2, a))] @ eqs1 @ eqs2
+  | S.Pair (e1, e2) ->
+      let t1, eqs1 = infer_exp ctx e1
+      and t2, eqs2 = infer_exp ctx e2 in
+      S.ProdTy (t1, t2), eqs1 @ eqs2
+  | S.Fst e ->
+      let a = fresh_ty ()
+      and b = fresh_ty () 
+      and t, eqs = infer_exp ctx e in
+      a, [(t, S.ProdTy(a,b))] @ eqs
+  | S.Snd e ->
+      let a = fresh_ty ()
+      and b = fresh_ty () 
+      and t, eqs = infer_exp ctx e in
+      b, [(t, S.ProdTy(a,b))] @ eqs
+  | S.Nil ->
+      let a = fresh_ty () in
+      S.ListTy a, [] 
+  | S.Cons (e1, e2) ->
+      let t1, eqs1 = infer_exp ctx e1
+      and t2, eqs2 = infer_exp ctx e2 in
+      S.ListTy t1, [(t2, S.ListTy t1)] @ eqs1 @ eqs2
+  | S.Match (e, e1, x, xs, e2) -> 
+      let a = fresh_ty () in
+      let ctx' = (x, a) :: (xs, S.ListTy a) :: ctx in
+      let t, eqs = infer_exp ctx e
+      and t1, eqs1 = infer_exp ctx e1
+      and t2, eqs2 = infer_exp ctx' e2 in
+      t1, [(t1, t2); (t, S.ListTy a)] @ eqs @ eqs1 @ eqs2
 
 
 
@@ -62,6 +90,8 @@ let rec occurs a = function
   | S.ParamTy a' -> a = a'
   | S.IntTy | S.BoolTy -> false
   | S.ArrowTy (t1, t2) -> occurs a t1 || occurs a t2
+  | S.ProdTy (t1, t2) -> occurs a t1 || occurs a t2
+  | S.ListTy t -> occurs a t
 
 
 let rec solve sbst = function
@@ -71,6 +101,10 @@ let rec solve sbst = function
       solve sbst eqs
   | (S.ArrowTy (t1, t1'), S.ArrowTy (t2, t2')) :: eqs ->
       solve sbst ((t1, t2) :: (t1', t2') :: eqs)
+  | (S.ListTy t1, S.ListTy t2) :: eqs ->
+      solve sbst ((t1, t2) :: eqs)
+  | (S.ProdTy (t1, t2), S.ProdTy (t3, t4)) :: eqs ->
+      solve sbst ((t1, t3) :: (t2, t4) :: eqs)
   | (S.ParamTy a, t) :: eqs when not (occurs a t) ->
       let sbst' = add_subst a t sbst in
       solve sbst' (subst_equations sbst' eqs)
@@ -90,6 +124,10 @@ let rec renaming sbst = function
   | S.ArrowTy (t1, t2) ->
       let sbst' = renaming sbst t1 in
       renaming sbst' t2
+  | S.ProdTy (t1, t2) ->
+      let sbst' = renaming sbst t1 in
+      renaming sbst' t2
+  | S.ListTy t -> renaming sbst t
 
 
 let infer e =

@@ -295,7 +295,51 @@ lemma weakening {Γ e A x B} :
     of Γ e A -> of (ctx.cons Γ x B) e A
 :=
 begin
-    sorry
+    intros H,
+    induction H,
+    case of.unit {
+        apply of.unit,
+    },
+    case of.true {
+        apply of.true,
+    },
+    case of.false {
+        apply of.false,
+    },
+    case of.nil {
+        apply of.nil,
+    },
+    case of.app {
+        apply of.app H_ih_a H_ih_a_1,
+    },
+    case of.if_then_else {
+        apply of.if_then_else H_ih_a H_ih_a_1 H_ih_a_2, 
+    },
+    case of.pair {
+        apply of.pair H_ih_a H_ih_a_1,
+    },
+    case of.fst {
+        apply of.fst H_ih,
+    },
+    case of.snd {
+        apply of.snd H_ih,
+    },
+    case of.cons {
+        apply of.cons H_ih_a H_ih_a_1,
+    },
+    -- Problem pri vsem kar vsebuje spremenljivko x
+    case of.var {
+        apply of.var,
+        sorry,
+    },
+    case of.lam {
+        --apply of.lam H_ih,
+        sorry,
+    },
+    case of.list_match {
+        --apply of.list_match H_ih_a H_ih_a_1 H_ih_a_2,
+        sorry,
+    },
 end
 
 
@@ -342,7 +386,66 @@ begin
         cases Hof,
         apply Hof_a_2
     },
-    repeat {sorry},
+    case step.pair1 {
+        cases Hof,
+        apply of.pair,
+        apply Hstep_ih Hof_a,
+        assumption,
+    },
+    case step.pair2 {
+        cases Hof,
+        apply of.pair,
+        assumption,
+        apply Hstep_ih Hof_a_1,
+    },
+    case step.fst_step {
+        cases Hof,
+        apply of.fst,
+        apply Hstep_ih Hof_a,
+    },
+    case step.fst_beta {
+        cases Hof,
+        cases Hof_a,
+        assumption,
+    },
+    case step.snd_step{
+        cases Hof,
+        apply of.snd,
+        apply Hstep_ih Hof_a,
+    },
+    case step.snd_beta {
+        cases Hof,
+        cases Hof_a,
+        assumption,
+    },
+    case step.cons1{
+        cases Hof,
+        apply of.cons,
+        apply Hstep_ih Hof_a,
+        assumption,
+    },
+    case step.cons2{
+        cases Hof,
+        apply of.cons,
+        assumption,
+        apply Hstep_ih Hof_a_1,
+    },
+    case step.list_match_step{
+        cases Hof,
+        apply of.list_match,
+        apply Hstep_ih Hof_a,
+        assumption,
+        assumption,
+    },
+    case step.list_match_nil{
+        cases Hof,
+        assumption,
+    },
+    case step.list_match_cons{
+        cases Hof,
+        cases Hof_a,
+        apply substitution Hof_a_a (substitution (weakening Hof_a_a_1) Hof_a_2),
+    },
 end
 
 
@@ -433,5 +536,115 @@ begin
             exact (step.if_then_else h_h),
         }
   },
-  repeat {sorry},
+  case of.pair {
+      cases H_ih_a empty,
+      case or.inl {
+          cases H_ih_a_1 empty,
+          case or.inl {
+              left,
+              exact value.pair h h_1,
+          },
+          case or.inr {
+              right,
+              cases h_1,
+              existsi (tm.pair H_e1 h_1_w),
+              exact step.pair2 h h_1_h,
+          },
+      },
+      case or.inr {
+          right,
+          cases h,
+          existsi (tm.pair h_w H_e2),
+          exact step.pair1 h_h,
+      },
+  },
+  case of.fst {
+      cases H_ih empty,
+      case or.inr {
+          right,
+          cases h,
+          existsi (tm.fst h_w),
+          exact step.fst_step h_h,
+      },
+      case or.inl {
+          right,
+          cases H_a,
+          case of.pair {
+              existsi H_a_e1,
+              apply (step.fst_beta h),
+          },
+          repeat {cases h},
+      },
+  },
+  case of.snd {
+      cases H_ih empty,
+      case or.inr {
+          right,
+          cases h,
+          existsi (tm.snd h_w),
+          exact step.snd_step h_h,
+      },
+      case or.inl {
+          right,
+          cases H_a,
+          case of.pair {
+              existsi H_a_e2,
+              apply (step.snd_beta h),
+          },
+          repeat {cases h},
+      },
+  },
+  case of.nil {
+      left,
+      exact value.nil,
+  },
+  case of.cons {
+      cases H_ih_a empty,
+      case or.inl {
+          cases H_ih_a_1 empty,
+          case or.inl {
+              left,
+              exact value.cons h h_1,
+          },
+          case or.inr {
+              right,
+              cases h_1,
+              existsi (tm.cons H_e h_1_w),
+              exact step.cons2 h h_1_h,
+          },
+      },
+      case or.inr {
+          right,
+          cases h,
+          existsi (tm.cons h_w H_es),
+          exact step.cons1 h_h,
+      },
+  },
+  case of.list_match {
+      cases H_ih_a empty,
+        case or.inl {
+            cases H_a,
+            case of.var {
+                rw ←empty at H_a_a,
+                cases H_a_a
+            },
+            case of.nil {
+                right,
+                existsi H_e1,
+                exact step.list_match_nil
+            },
+            case of.cons {
+                right,
+                existsi (subst H_x H_a_e (subst H_xs H_a_es H_e2)),
+                exact step.list_match_cons,
+            },
+            repeat {cases h},
+        },
+        case or.inr {
+            cases h,
+            right,
+            existsi (tm.list_match h_w H_e1 H_x H_xs H_e2),
+            exact (step.list_match_step h_h),
+        }
+  },
 end
