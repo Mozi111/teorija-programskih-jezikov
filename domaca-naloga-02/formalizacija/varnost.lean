@@ -329,17 +329,21 @@ begin
     },
     -- Problem pri vsem kar vsebuje spremenljivko x
     case of.var {
-        apply of.var,
+        apply of.var, -- H_x mora biti različno od x
+        -- x bi moral biti različen od prostih spremenljivk v e
         sorry,
     },
     case of.lam {
-        --apply of.lam H_ih,
+        --apply of.lam H_ih, 
+        -- bi delovalo, če bi lahko zamenjali vrstni red elementov v kontekstu
         sorry,
     },
     case of.list_match {
         --apply of.list_match H_ih_a H_ih_a_1 H_ih_a_2,
+        -- bi delovalo, če bi lahko zamenjali vrstni red elementov v kontekstu
         sorry,
     },
+    -- potrebovali bi sistem, ki ne bi bil odvisen od zaporedja elementov v kontekstu
 end
 
 
